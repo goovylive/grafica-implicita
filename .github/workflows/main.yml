@@ -1,22 +1,34 @@
-name: Sync to Hugging Face Spaces
+name: Sincronizar con Hugging Face Space
 
+# Sección de triggers: Ejecuta el workflow en push a la rama principal o manualmente
 on:
   push:
-    branches: [main]  # Ej: main o master
-  workflow_dispatch:  # Para ejecutarlo manualmente
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Paso 1: Checkout del repositorio con profundidad completa y soporte para LFS
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           lfs: true
 
-      - name: Push to Hugging Face Spaces
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN3 }}  # Ej: HF_TOKEN o HF_TOKEN5
+      # Paso 2: Configuración de Git para el push
+      - name: Configurar Git
         run: |
-          git push --force https://goovylive:${HF_TOKEN}@huggingface.co/spaces/goovylive/grafica-implicita main
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      # Paso 3: Push forzado al Hugging Face Space usando el token secreto
+      - name: Push a Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN3 }}
+        run: |
+          git remote add space https://goovylive:${HF_TOKEN}@huggingface.co/spaces/goovylive/grafica-implicita
+          git push --force space main
