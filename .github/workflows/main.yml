@@ -30,16 +30,22 @@ jobs:
         env:
           # Usar el token secreto almacenado en GitHub
           TOKEN: ${{ secrets.HF_TOKEN3 }}
-          # Datos del Space - REEMPLAZA CON TUS DATOS
+          # Datos del Space
           HF_USERNAME: goovylive
           SPACE_NAME: grafica-implicita
         run: |
-          # Agregar el remote de Hugging Face
-          git remote add space https://${HF_USERNAME}:${TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}
+          # Usar formato CORRECTO con token de acceso (no password)
+          # El formato correcto es: https://oauth2:${TOKEN}@huggingface.co
+          echo "🔧 Configurando remote de Hugging Face..."
+          git remote add space https://oauth2:${TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}
           
+          echo "🚀 Empujando código a Hugging Face Space..."
           # Empujar el código con --force para sobrescribir cualquier conflicto
           # IMPORTANTE: --force es necesario porque Hugging Face Spaces inicia con archivos de plantilla
           git push --force space main
           
           echo "✅ Despliegue completado exitosamente en:"
           echo "https://huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}"
+          
+          # Limpiar el remote después del push
+          git remote remove space
