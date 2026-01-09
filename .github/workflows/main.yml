@@ -1,57 +1,24 @@
-name: Deploy to Hugging Face Space
+name: Sync to Hugging Face Spaces
+
 on:
-  # Trigger automático cuando se hace push a la rama main
   push:
-    branches: [ main ]
-  # Permite ejecutar manualmente desde la pestaña Actions
-  workflow_dispatch:
+    branches: [main]  # Ej: main o master
+  workflow_dispatch:  # Para ejecutarlo manualmente
 
 jobs:
-  deploy:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      # Paso 1: Descargar el código del repositorio
-      - name: Checkout código
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          # Depth 0 para obtener todo el historial (necesario para --force)
           fetch-depth: 0
-          # Habilitar Git LFS si se usan archivos grandes
           lfs: true
 
-      # Paso 2: Configurar Git con usuario y email
-      - name: Configurar Git
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-
-      # Paso 3: Sincronizar con Hugging Face Space
-      - name: Push a Hugging Face Space
+      - name: Push to Hugging Face Spaces
         env:
-          # Usar el token secreto almacenado en GitHub
-          TOKEN: ${{ secrets.HF_TOKEN3 }}
-          # Datos del Space
-          HF_USERNAME: goovylive
-          SPACE_NAME: grafica-implicita
+          HF_TOKEN: ${{ secrets.HF_TOKENS3 }}  # Ej: HF_TOKEN o HF_TOKEN5
         run: |
-          echo "🔧 Configurando remote de Hugging Face..."
-          echo "Token length: ${#TOKEN}"  # Para verificar que el token no esté vacío
-          
-          # Método 1: Configurar git con el token como header de autenticación
-          git config --global http.https://huggingface.co/.extraheader "Authorization: Bearer ${TOKEN}"
-          
-          # Método 2: Agregar remote usando URL alternativa
-          git remote add space https://huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}
-          
-          echo "🚀 Empujando código a Hugging Face Space..."
-          
-          # Empujar usando el token configurado globalmente
-          # Usamos --force para sobrescribir archivos iniciales del template
-          git push --force space main
-          
-          # Limpiar configuración
-          git config --global --unset http.https://huggingface.co/.extraheader
-          git remote remove space
-          
-          echo "✅ Despliegue completado exitosamente en:"
-          echo "https://huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}"
+          git push --force https://goovylive:${HF_TOKEN}@huggingface.co/spaces/goovylive/grafica-implicita main
+
+
