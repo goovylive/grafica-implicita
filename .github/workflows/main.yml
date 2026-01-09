@@ -1,0 +1,22 @@
+name: Sync to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main]  # Ej: main o master
+  workflow_dispatch:  # Para ejecutarlo manualmente
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to Hugging Face Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN3 }}  # Ej: HF_TOKEN o HF_TOKEN5
+        run: |
+          git push --force https://goovylive:${HF_TOKEN}@huggingface.co/spaces/goovylive/grafica-implicita main
