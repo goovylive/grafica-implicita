@@ -1,34 +1,43 @@
 name: Sincronizar con Hugging Face Space
 
-# Sección de triggers: Ejecuta el workflow en push a la rama principal o manualmente
 on:
+  # Se ejecuta automáticamente en cada push a la rama principal
   push:
-    branches:
-      - main
+    branches: [ main ]
+  
+  # Permite ejecutar el workflow manualmente desde la pestaña Actions
   workflow_dispatch:
 
 jobs:
-  sync:
+  sync-to-huggingface:
+    name: Sincronizar repositorio con Hugging Face Space
     runs-on: ubuntu-latest
-
+    
     steps:
-      # Paso 1: Checkout del repositorio con profundidad completa y soporte para LFS
-      - name: Checkout repositorio
-        uses: actions/checkout@v4
+      # Paso 1: Descargar el código del repositorio
+      - name: Checkout del repositorio
+        uses: actions/checkout@v3
         with:
+          # Configuración profunda para clonar todo el historial (necesario para --force)
           fetch-depth: 0
+          # Habilita Git LFS para manejar archivos grandes si los hay
           lfs: true
-
-      # Paso 2: Configuración de Git para el push
+      
+      # Paso 2: Configurar Git con usuario y email
       - name: Configurar Git
         run: |
+          git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-
-      # Paso 3: Push forzado al Hugging Face Space usando el token secreto
-      - name: Push a Hugging Face Space
+      
+      # Paso 3: Sincronizar con Hugging Face Space usando force push
+      - name: Forzar push al Space de Hugging Face
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN3 }}
+          # Usa el token almacenado en los secrets de GitHub
+          TOKEN: ${{ secrets.HF_TOKEN3 }}
         run: |
-          git remote add space https://goovylive:${HF_TOKEN}@huggingface.co/spaces/goovylive/grafica-implicita
-          git push --force space main
+          # URL formateada para push forzado al Space especificado
+          # Formato: https://USUARIO:TOKEN@huggingface.co/spaces/USUARIO/NOMBRE_SPACE
+          git push --force https://goovylive:${TOKEN}@huggingface.co/spaces/goovylive/grafica-implicita main
+          
+          # Nota: --force es necesario para sobrescribir la plantilla inicial de Hugging Face
+          # y reemplazarla completamente con el contenido de este repositorio
