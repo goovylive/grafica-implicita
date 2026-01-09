@@ -34,18 +34,24 @@ jobs:
           HF_USERNAME: goovylive
           SPACE_NAME: grafica-implicita
         run: |
-          # Usar formato CORRECTO con token de acceso (no password)
-          # El formato correcto es: https://oauth2:${TOKEN}@huggingface.co
           echo "🔧 Configurando remote de Hugging Face..."
-          git remote add space https://oauth2:${TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}
+          echo "Token length: ${#TOKEN}"  # Para verificar que el token no esté vacío
+          
+          # Método 1: Configurar git con el token como header de autenticación
+          git config --global http.https://huggingface.co/.extraheader "Authorization: Bearer ${TOKEN}"
+          
+          # Método 2: Agregar remote usando URL alternativa
+          git remote add space https://huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}
           
           echo "🚀 Empujando código a Hugging Face Space..."
-          # Empujar el código con --force para sobrescribir cualquier conflicto
-          # IMPORTANTE: --force es necesario porque Hugging Face Spaces inicia con archivos de plantilla
+          
+          # Empujar usando el token configurado globalmente
+          # Usamos --force para sobrescribir archivos iniciales del template
           git push --force space main
+          
+          # Limpiar configuración
+          git config --global --unset http.https://huggingface.co/.extraheader
+          git remote remove space
           
           echo "✅ Despliegue completado exitosamente en:"
           echo "https://huggingface.co/spaces/${HF_USERNAME}/${SPACE_NAME}"
-          
-          # Limpiar el remote después del push
-          git remote remove space
